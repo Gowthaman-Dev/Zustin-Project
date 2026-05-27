@@ -16,7 +16,7 @@ connectdb();
 const app = express();
 
 /* =========================
-   CORS CONFIG (FIXED)
+   CORS (PRODUCTION FIX)
 ========================= */
 const allowedOrigins = [
   "http://localhost:5173",
@@ -24,24 +24,24 @@ const allowedOrigins = [
   "https://zustin-project-q423bfo1u-gowtham-s-projects-c73b1c7e.vercel.app"
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      console.log("Blocked by CORS:", origin);
-      return callback(null, true); // ⚠️ allow for debugging
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
 
-// 🔥 IMPORTANT: handle preflight
-app.options("*", cors());
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  // Handle preflight request
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 
 /* =========================
    MIDDLEWARE
@@ -50,12 +50,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* =========================
-   ROUTES
+   TEST ROUTE
 ========================= */
 app.get("/", (req, res) => {
   res.send("Pinterest Clone API is running...");
 });
 
+/* =========================
+   CLOUDINARY TEST
+========================= */
 app.get("/test-cloud", async (req, res) => {
   try {
     const result = await cloudinary.api.ping();
@@ -65,6 +68,9 @@ app.get("/test-cloud", async (req, res) => {
   }
 });
 
+/* =========================
+   API ROUTES
+========================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.post("/api/scrape/images", scrapeImagesFromUrl);
