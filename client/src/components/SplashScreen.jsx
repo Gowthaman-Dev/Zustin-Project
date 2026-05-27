@@ -8,20 +8,20 @@ const SplashScreen = () => {
   const [showCursor, setShowCursor] = useState(true);
 
   useEffect(() => {
-    if (currentIndex < words.length) {
-      const timer = setTimeout(() => {
-        setDisplayedWords(prev => [...prev, words[currentIndex]]);
-        setCurrentIndex(prev => prev + 1);
-      }, 400);
-      return () => clearTimeout(timer);
-    } else {
-      const redirectTimer = setTimeout(() => {
-        localStorage.setItem('splashShown', 'true');
-        window.location.href = '/register';
-      }, 800);
-      return () => clearTimeout(redirectTimer);
-    }
-  }, [currentIndex, words]);
+  if (currentIndex < words.length) {
+    const timer = setTimeout(() => {
+      setDisplayedWords(prev => [...prev, words[currentIndex]]);
+      setCurrentIndex(prev => prev + 1);
+    }, 300); // faster animation
+    return () => clearTimeout(timer);
+  } else {
+    const redirectTimer = setTimeout(() => {
+      localStorage.setItem('splashShown', 'true');
+      window.location.href = '/register';
+    }, 1200); // total ~4 sec target
+    return () => clearTimeout(redirectTimer);
+  }
+}, [currentIndex, words]);
 
   useEffect(() => {
     if (currentIndex === words.length) {
